@@ -41,6 +41,7 @@
 #define CDOGS_VERSION		"v1.06"
 #define CDOGS_SDL_VERSION	"v0.4"
 #define CDOGS_SDL_HOMEPAGE	"http://icculus.org/cdogs-sdl"
+#define CDOGS_DS_HOMEPAGE	"http://GTAMP.com/DS"
 
 // Defines
 #define BODY_UNARMED        0

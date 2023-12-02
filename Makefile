@@ -15,11 +15,12 @@ ASFLAGS = $(CFLAGS)
 LIBDIR =
 LDFLAGS =
 
-EXTRA_TARGETS = EBOOT.PBP SCEkxploit
+EXTRA_TARGETS = EBOOT.PBP
+#SCEkxploit
 
 PSP_DIR_NAME = CDOGSPSP
 PSP_EBOOT_SFO = param.sfo
-PSP_EBOOT_TITLE = C-DogsPSP v0.1
+PSP_EBOOT_TITLE = C-DogsPSP v0.1.3.80
 PSP_EBOOT = EBOOT.PBP
 PSP_EBOOT_ICON = icon0.png
 PSP_EBOOT_ICON1 = NULL
@@ -27,11 +28,12 @@ PSP_EBOOT_PIC0 = NULL
 PSP_EBOOT_PIC1 = NULL
 PSP_EBOOT_SND0 = NULL
 PSP_EBOOT_PSAR = NULL
+BUILD_PRX = 1
+PSP_FW_VERSION = 371
 
 PSPSDK=$(shell psp-config --pspsdk-path)
 PSPBIN = $(PSPSDK)/../bin
 CFLAGS += $(shell $(PSPBIN)/sdl-config --cflags)
 LIBS += $(shell $(PSPBIN)/sdl-config --libs) -lpsppower
-
 #-lSDL_mixer -lm
 include $(PSPSDK)/lib/build.mak

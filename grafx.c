@@ -53,7 +53,11 @@
 GFX_Mode gfx_modelist[] = {
 #ifdef SYS_PSP
 	{ 320, 240 },
-#else
+#endif
+#ifdef SYS_NDS
+	{ 256, 192 },
+#endif
+#if !defined (SYS_PSP) & SYS_NDS
 	{ 320, 200 },
 	{ 320, 240 },
 	{ 400, 300 },
@@ -62,7 +66,7 @@ GFX_Mode gfx_modelist[] = {
 #endif
 	{ 0, 0 },
 };
-#ifdef SYS_PSP
+#if defined (SYS_PSP) || SYS_NDS
 #define MODE_MAX 0
 #else
 #define MODE_MAX 4
@@ -122,8 +126,13 @@ int hints[HINT_END] = {
 	#else
 	1,		// HINT_SCALEFACTOR
 	#endif
+	#ifdef SYS_NDS
+	256,		// HINT_WIDTH
+	192,		// HINT_HEIGHT
+	#else
 	320,		// HINT_WIDTH
 	240,		// HINT_HEIGHT
+	#endif
 	0		// HINT_FORCEMODE
 };
 
@@ -159,7 +168,10 @@ int InitVideo(void)
 
 	sdl_flags |= SDL_HWPALETTE;
 	sdl_flags |= SDL_SWSURFACE;
-
+	//#ifdef SYS_PSP
+	//	new_screen = SDL_SetVideoMode(480, 272, 8, SDL_HWPALETTE | SDL_SWSURFACE);
+	//#endif
+	
 	if (Hint(HINT_FULLSCREEN)) sdl_flags |= SDL_FULLSCREEN;
 
 	if (screen == NULL) {
@@ -191,6 +203,9 @@ int InitVideo(void)
 
 	printf("Window dimensions:\t%dx%d\n", rw, rh);
 	new_screen = SDL_SetVideoMode(rw, rh, 8, sdl_flags);
+	#ifdef _NDS_
+	SDL_ShowCursor(SDL_DISABLE);
+	#endif
 
 	if (new_screen == NULL) {
 		printf("ERROR: InitVideo: %s\n", SDL_GetError() );

@@ -30,6 +30,9 @@
  
 */
 
+#ifdef SYS_NDS
+#include <nds.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -125,6 +128,8 @@ struct Credit {
 };
 
 static struct Credit credits[] = {
+	{"Visit the C-Dogs DS homepage!",
+	 CDOGS_DS_HOMEPAGE},
 	{"Visit the C-Dogs SDL Homepage!",
 	 CDOGS_SDL_HOMEPAGE},
 
@@ -165,7 +170,7 @@ static struct Credit credits[] = {
 	 "He did all the hard porting work! ;)"}
 };
 
-#define CREDIT_PERIOD   10
+#define CREDIT_PERIOD   1
 
 
 static TCampaignSetting customSetting = {
@@ -181,7 +186,6 @@ static TCampaignSetting customSetting = {
 
 static struct FileEntry *campaignList = NULL;
 static struct FileEntry *dogfightList = NULL;
-
 
 void LookForCustomCampaigns(void)
 {
@@ -1019,7 +1023,7 @@ int MakeSelection(int mode, int cmd)
 
 static void ShowCredits(void)
 {
-	static int creditIndex = 0;
+	static int creditIndex = 10;
 	static int lastTick = 0;
 	int t;
 
@@ -1027,14 +1031,18 @@ static void ShowCredits(void)
 	TextStringWithTableAt(20, SCREEN_HEIGHT - 40, credits[creditIndex].name, &tablePurple);
 	TextStringWithTableAt(20, SCREEN_HEIGHT - 40 + TextHeight(), credits[creditIndex].message, &tableDarker);
 
+	#ifdef SYS_NDS
+	creditIndex=0;
+	#else
 	t = clock() / CLOCKS_PER_SEC;
-
+	
 	if (t > lastTick + CREDIT_PERIOD) {
 		creditIndex++;
 		if (creditIndex >= sizeof(credits) / sizeof(credits[0]))
 			creditIndex = 0;
 		lastTick = t;
 	}
+	#endif
 }
 
 int MainMenu(void *bkg)

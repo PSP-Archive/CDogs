@@ -566,7 +566,7 @@ int gameloop(void)
 	gameIsPaused = NO;
 
 	missionTime = 0;
-	//screenShaking = 0;
+	screenShaking = 0; //sektor
 	while (!done) {
 		frames++;
 

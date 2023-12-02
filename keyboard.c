@@ -73,6 +73,7 @@ char KeyDown(int key)
 }
 
 
+
 #ifdef SYS_NDS
 int GetKeyDown(void)
 {
@@ -98,7 +99,9 @@ int GetKeyDown(void)
 		return pad.Buttons;
 	return 0;
 }
-#else
+#endif
+
+#if (!defined SYS_PSP) && !defined SYS_NDS
 int GetKeyDown(void)
 {
 	int i;

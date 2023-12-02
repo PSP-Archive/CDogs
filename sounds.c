@@ -407,6 +407,11 @@ int PlaySong(char *name)
 
 void PlaySound(int sound, int panning, int volume)
 {
+	//#ifdef SYS_NDS
+	//#include <nds/arm9/sound.h>		// sound functions
+	//#include "saberoff_raw.h"
+	//playGenericSound(saberoff_raw, saberoff_raw_size);
+	//#endif
 	if (!soundInitialized)
 		return;
 

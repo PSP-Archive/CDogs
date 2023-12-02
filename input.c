@@ -123,8 +123,11 @@ static void GetOnePlayerCmd(struct PlayerData *data,
 			if (pad.Buttons & PSP_CTRL_SELECT)
 				*cmd |= CMD_BUTTON3;
 			if (pad.Buttons & PSP_CTRL_START)
-				*cmd |= CMD_BUTTON4;           
-			#else
+				*cmd |= CMD_BUTTON4;
+			#endif
+			
+			#ifndef SYS_PSP
+			#ifndef SYS_NDS
 			if (KeyDown(data->keys[0]))
 				*cmd |= CMD_LEFT;
 			else if (KeyDown(data->keys[1]))
@@ -137,6 +140,7 @@ static void GetOnePlayerCmd(struct PlayerData *data,
 				*cmd |= CMD_BUTTON1;
 			if (KeyDown(data->keys[5]))
 				*cmd |= CMD_BUTTON2;
+			#endif
 			#endif
 		}
 	}

@@ -1,7 +1,17 @@
-cdogsPSP v0.1 - 2007/08/19
+2008/01/15 - cdogsPSP v0.1.3.80
+- Requires 3.x M33 and is compatible with 3.80 M33.  No other changes.
+
+2007/08/19 - cdogsPSP v0.1 - first release
 --------------------------
 This is a port of the classic cdogs (cyberdogs 2) to Sony PSP.
-It's a top-view gauntlet style shooter.  You can customize your character and select from a variety of weapons.  You walk around shooting guards and collecting things.
+It's a gauntlet style shooter.  You walk around shooting enemies and
+collecting items for missions.
+
+At the moment it only runs at around 13 FPS.  This is mainly because it's
+scaling 320x240 to 640x480 and then SDL is scaling it to 480x272.  I
+tried running with the scaling disabled but the display just gets
+messed up (probably a bug/missing feature in PSP SDL).  The sound is
+really quiet and settings aren't saved.
 
 Original Code Copyright Ronny Wester 1995
 Game Data Copyright Ronny Wester 1995

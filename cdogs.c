@@ -24,12 +24,14 @@
  cdogs.c - main bits
  
 */
+
+#ifdef SYS_NDS
+#include <fat.h>
+#include <nds.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-//#ifdef SYS_PSP
-//#define printf  pspDebugScreenPrintf
-//#endif
 #include <time.h>
 
 #include "SDL.h"
@@ -60,6 +62,38 @@
 static void *bkg = NULL;
 static char lastPassword[PASSWORD_MAX + 1] = "";
 
+
+#ifdef SYS_PSP
+#define SDL_main main
+#include <pspsdk.h>
+PSP_MODULE_INFO("DiggerPSP", 0, 1, 0);
+PSP_HEAP_SIZE_KB(20480);
+int ExitCallback(int arg1, int arg2, void *common)
+{
+   sceKernelExitGame();
+   return 0;
+}
+
+int CallbackThread(SceSize args, void *argp)
+{
+   int cbid;
+   cbid = sceKernelCreateCallback("Exit Callback", ExitCallback, NULL);
+   sceKernelRegisterExitCallback(cbid);
+   sceKernelSleepThreadCB();
+
+   return 0;
+}
+
+int SetupCallbacks()
+{
+   int thid = 0;
+   thid = sceKernelCreateThread("update_thread", CallbackThread, 0x11, 0xFA0, 0, 0);
+   if (thid >= 0)
+      sceKernelStartThread(thid, 0, 0);
+
+   return thid;
+} 
+#endif
 
 void DrawObjectiveInfo(int index, int x, int y, struct Mission *mission)
 {
@@ -793,6 +827,7 @@ void *MakeBkg(void)
 void MainLoop(void)
 {
 	#ifdef SYS_PSP
+	SetupCallbacks();
 	scePowerSetClockFrequency(333, 333, 166);
 	#endif
 	void *myScreen;
@@ -879,78 +914,40 @@ void PrintHelp (void)
 }
 
 int main(int argc, char *argv[])
-{
-	//Neoflash
-	SDL_Surface *screen;	//This pointer will reference the backbuffer
-	SDL_Surface *image;	//This pointer will reference our bitmap sprite
-	SDL_Surface *temp;	//This pointer will temporarily reference our bitmap sprite
-	SDL_Rect src, dest;	//These rectangles will describe the source and destination regions of our blit
-	
-	//We must first initialize the SDL video component, and check for success
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		printf("Unable to initialize SDL: %s\n", SDL_GetError());
-		return 1;
-	}
-	
-	//When this program exits, SDL_Quit must be called
-	//atexit(SDL_Quit);
-	
-	//Set the video mode to fullscreen 480x272 with 16bit colour and double-buffering
-	screen = SDL_SetVideoMode(480, 272, 16, SDL_DOUBLEBUF | SDL_FULLSCREEN);
-	if (screen == NULL) {
-		printf("Unable to set video mode: %s\n", SDL_GetError());
-		return 1;
-	}
-	
-	//Load the bitmap into a temporary surface, and check for success
-	temp = SDL_LoadBMP("splash.bmp");
-	if (temp != NULL) {
-	//Convert the surface to the appropriate display format
-	image = SDL_DisplayFormat(temp);
-	
-	//Release the temporary surface
-	SDL_FreeSurface(temp);
-	
-	//Construct the source rectangle for our blit
-	src.x = 0;
-	src.y = 0;
-	src.w = image->w;	//Use image->w to display the entire width of the image
-	src.h = image->h;	//Use image->h to display the entire height of the image
-	
-	//Construct the destination rectangle for our blit
-	dest.x = 0;		//Display the image at the (X,Y) coordinates (100,100)
-	dest.y = 0;
-	dest.w = image->w;	//Ensure the destination is large enough for the image's entire width/height
-	dest.h = image->h;
-	
-	//Blit the image to the backbuffer
-	SDL_BlitSurface(image, NULL, screen, &dest);
-	//SDL_BlitSurface(image, &src, screen, &dest);
-	
-	//Flip the backbuffer to the primary
-	SDL_Flip(screen);
-	
-	//Wait for 2500ms (2.5 seconds) so we can see the image
-	SDL_Delay(2500);
-	
-	//Release the surface
-	//SDL_FreeSurface(image); //causes crash
-	//
-	}
-	
+{	
 	int i, wait = 0;
 	char s[13];
 	int compile = 1, rle = 1;
 	int snd_flag = SDL_INIT_AUDIO;
 	int js_flag = SDL_INIT_JOYSTICK;
 	int sound = 1;
-
+	
+	#ifdef SYS_NDS
+	powerON(POWER_ALL);  
+	videoSetMode(MODE_0_2D | DISPLAY_BG0_ACTIVE);
+	vramSetBankA(VRAM_A_MAIN_BG);
+	BG0_CR = BG_MAP_BASE(31);
+	BG_PALETTE[255] = RGB15(31,31,31);
+	consoleInitDefault((u16*)SCREEN_BASE_BLOCK(31), (u16*)CHAR_BASE_BLOCK(0), 16);
+	//consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(8), (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
+	//BG_PALETTE_SUB[0] = RGB15(0,0,0); // turn the screen black
+	
+	iprintf("fatInit...\n");
+	if (!fatInitDefault())  
+	{
+		iprintf("FAT init failed.  Did you patch with the right DLDI driver?");
+		return -1;
+	}
+	#endif
+	
 	PrintTitle();
 
 	if (getenv("DEBUG") != NULL) debug = 1;
 
+	#ifndef SYS_PSP
 	SetupConfigDir();
 	LoadConfig();
+	#endif
 	
 	for (i = 1; i < argc; i++) {
 		if ((strlen(argv[i]) > 1 && *(argv[i]) == '-') || *(argv[i]) == '/') {
@@ -1058,6 +1055,10 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
+	#ifdef SYS_NDS
+	consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(8), (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
+	#endif
+	
 	compile = 0;
 	rle = 0;
 
@@ -1138,7 +1139,8 @@ int main(int argc, char *argv[])
 		MainLoop();
 	}
 	printf(">> Shutting Down...\n");
-
+	
+	#ifndef SYS_PSP
 	ShutDownVideo();
 	printf("%s\n",GetConfigFilePath("options.cnf"));
 	SaveConfig();
@@ -1146,16 +1148,19 @@ int main(int argc, char *argv[])
 	FreeSongs(&gMenuSongs);
 	FreeSongs(&gGameSongs);
 	SaveHighScores();
-	#ifndef SYS_PSP
+	
 	if (sound) {
 		ShutDownSound();
 	}
-
+	
 	debug("SDL_Quit()\n");
 	SDL_Quit();
 
 	printf("Bye :)\n");
 
 	exit(EXIT_SUCCESS);
+	#else
+	sceKernelExitGame();
+	return 0;
 	#endif
 }

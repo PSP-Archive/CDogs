@@ -38,7 +38,9 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
+#ifndef SYS_NDS
+	#include <dirent.h>
+#endif
 
 #ifndef _MSC_VER
 	#include <unistd.h>
@@ -587,6 +589,9 @@ void AddFileEntry(struct FileEntry **list, const char *name,
 
 struct FileEntry *GetFilesFromDirectory(const char *directory)
 {
+	#ifdef SYS_NDS
+	return 0;
+	#else
 	DIR *dir;
 	struct dirent *d;
 	struct FileEntry *list = NULL;
@@ -598,6 +603,7 @@ struct FileEntry *GetFilesFromDirectory(const char *directory)
 		closedir(dir);
 	}
 	return list;
+	#endif
 }
 
 void FreeFileEntries(struct FileEntry *entries)
